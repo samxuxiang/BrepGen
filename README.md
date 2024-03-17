@@ -15,4 +15,8 @@
   - [ ] Generation
   - [ ] Auto-Complete
   - [ ] Point2CAD
-- [ ] Full Release
+- [ ] Release Ready
+  - [ ] Website
+  - [ ] X Video
+  - [ ] Youtube Video
+  - [ ] Gradio Demo
