@@ -10,7 +10,7 @@
   - [x] Edge
 - [ ] LDM
   - [x] Surface position
-  - [ ] Surface latent z
+  - [x] Surface latent z
   - [ ] Edge position
   - [ ] Edge latent z
 - [ ] Evaluation
