@@ -1,7 +1,7 @@
 # BrepGen
 
 ### TODO
-- [] Data processing
+- [ ] Data processing
   - [x] DeepCAD
   - [x] ABC
   - [ ] Furniture
