@@ -6,6 +6,8 @@
   - [x] ABC
   - [ ] Furniture
 - [x] VAE
+  - [x] Surface
+  - [x] Edge
 - [ ] LDM
   - [x] Surface position
   - [ ] Surface latent z
