@@ -17,6 +17,6 @@
   - [ ] Point2CAD
 - [ ] Release Ready
   - [ ] Website
-  - [ ] X Video
-  - [ ] Youtube Video
+  - [ ] Twitter Short Video
+  - [ ] Youtube Long Video
   - [ ] Gradio Demo
