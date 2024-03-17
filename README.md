@@ -5,8 +5,8 @@
   - [x] DeepCAD
   - [x] ABC
   - [ ] Furniture
-- [x] VAE training
-- [ ] LDM training
+- [x] VAE
+- [ ] LDM
   - [x] Surface position
   - [ ] Surface latent z
   - [ ] Edge position
