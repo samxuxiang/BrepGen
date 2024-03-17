@@ -677,6 +677,93 @@ class AutoencoderKL1D(ModelMixin, ConfigMixin):
         return DecoderOutput(sample=dec)
 
 
+class AutoencoderKLFastInfer(ModelMixin, ConfigMixin):
+    r"""
+    A VAE model with KL loss for encoding images into latents and decoding latent representations into images.
+
+    This model inherits from [`ModelMixin`]. Check the superclass documentation for it's generic methods implemented
+    for all models (such as downloading or saving).
+
+    Parameters:
+        in_channels (int, *optional*, defaults to 3): Number of channels in the input image.
+        out_channels (int,  *optional*, defaults to 3): Number of channels in the output.
+        down_block_types (`Tuple[str]`, *optional*, defaults to `("DownEncoderBlock2D",)`):
+            Tuple of downsample block types.
+        up_block_types (`Tuple[str]`, *optional*, defaults to `("UpDecoderBlock2D",)`):
+            Tuple of upsample block types.
+        block_out_channels (`Tuple[int]`, *optional*, defaults to `(64,)`):
+            Tuple of block output channels.
+        act_fn (`str`, *optional*, defaults to `"silu"`): The activation function to use.
+        latent_channels (`int`, *optional*, defaults to 4): Number of channels in the latent space.
+        sample_size (`int`, *optional*, defaults to `32`): Sample input size.
+        scaling_factor (`float`, *optional*, defaults to 0.18215):
+            The component-wise standard deviation of the trained latent space computed using the first batch of the
+            training set. This is used to scale the latent space to have unit variance when training the diffusion
+            model. The latents are scaled with the formula `z = z * scaling_factor` before being passed to the
+            diffusion model. When decoding, the latents are scaled back to the original scale with the formula: `z = 1
+            / scaling_factor * z`. For more details, refer to sections 4.3.2 and D.1 of the [High-Resolution Image
+            Synthesis with Latent Diffusion Models](https://arxiv.org/abs/2112.10752) paper.
+        force_upcast (`bool`, *optional*, default to `True`):
+            If enabled it will force the VAE to run in float32 for high image resolution pipelines, such as SD-XL. VAE
+            can be fine-tuned / trained to a lower range without loosing too much precision in which case
+            `force_upcast` can be set to `False` - see: https://huggingface.co/madebyollin/sdxl-vae-fp16-fix
+    """
+
+    _supports_gradient_checkpointing = True
+
+    @register_to_config
+    def __init__(
+        self,
+        in_channels: int = 3,
+        out_channels: int = 3,
+        down_block_types: Tuple[str] = ("DownEncoderBlock2D",),
+        up_block_types: Tuple[str] = ("UpDecoderBlock2D",),
+        block_out_channels: Tuple[int] = (64,),
+        layers_per_block: int = 1,
+        act_fn: str = "silu",
+        latent_channels: int = 4,
+        norm_num_groups: int = 32,
+        sample_size: int = 32,
+        scaling_factor: float = 0.18215,
+        force_upcast: float = True,
+    ):
+        super().__init__()
+
+        # pass init params to Encoder
+        self.encoder = Encoder(
+            in_channels=in_channels,
+            out_channels=latent_channels,
+            down_block_types=down_block_types,
+            block_out_channels=block_out_channels,
+            layers_per_block=layers_per_block,
+            act_fn=act_fn,
+            norm_num_groups=norm_num_groups,
+            double_z=True,
+        )
+
+        self.quant_conv = nn.Conv2d(2 * latent_channels, 2 * latent_channels, 1)
+
+    def forward(
+        self, x: torch.FloatTensor, return_dict: bool = True
+    ) -> Union[AutoencoderKLOutput, Tuple[DiagonalGaussianDistribution]]:
+        """
+        Encode a batch of images into latents.
+
+        Args:
+            x (`torch.FloatTensor`): Input batch of images.
+            return_dict (`bool`, *optional*, defaults to `True`):
+                Whether to return a [`~models.autoencoder_kl.AutoencoderKLOutput`] instead of a plain tuple.
+
+        Returns:
+                The latent representations of the encoded images. If `return_dict` is True, a
+                [`~models.autoencoder_kl.AutoencoderKLOutput`] is returned, otherwise a plain `tuple` is returned.
+        """
+        h = self.encoder(x)
+        moments = self.quant_conv(h)
+        latent_z = DiagonalGaussianDistribution(moments).sample()
+        return latent_z
+
+
 def sincos_embedding(input, dim, max_period=10000):
     """
     Create sinusoidal timestep embeddings.
@@ -749,5 +836,62 @@ class SurfPosNet(nn.Module):
 
         tokens = p_embeds + time_embeds
         output = self.net(src=tokens.permute(1,0,2)).transpose(0,1)
+        pred = self.fc_out(output)
+        return pred
+    
+
+class SurfZNet(nn.Module):
+    """
+    Transformer-based latent diffusion model for surface position
+    """
+    def __init__(self):
+        super(SurfZNet, self).__init__()
+        self.embed_dim = 768
+        layer = nn.TransformerEncoderLayer(d_model=self.embed_dim, nhead=12, norm_first=True,
+                                                   dim_feedforward=1024, dropout=0.1)
+        self.net = nn.TransformerEncoder(layer, 12, nn.LayerNorm(self.embed_dim))
+
+        self.z_embed = nn.Sequential(
+            nn.Linear(3*16, self.embed_dim),
+            nn.LayerNorm(self.embed_dim),
+            nn.SiLU(),
+            nn.Linear(self.embed_dim, self.embed_dim),
+        )
+
+        self.p_embed = nn.Sequential(
+            nn.Linear(6, self.embed_dim),
+            nn.LayerNorm(self.embed_dim),
+            nn.SiLU(),
+            nn.Linear(self.embed_dim, self.embed_dim),
+        ) 
+
+        self.time_embed = nn.Sequential(
+            nn.Linear(self.embed_dim, self.embed_dim),
+            nn.LayerNorm(self.embed_dim),
+            nn.SiLU(),
+            nn.Linear(self.embed_dim, self.embed_dim),
+        )
+
+        self.fc_out = nn.Sequential(
+            nn.Linear(self.embed_dim, self.embed_dim),
+            nn.LayerNorm(self.embed_dim),
+            nn.SiLU(),
+            nn.Linear(self.embed_dim, 3*16),
+        )
+        return
+
+       
+    def forward(self, surfZ, timesteps, surfPos, surf_mask):
+        """ forward pass """
+        time_embeds = self.time_embed(sincos_embedding(timesteps, self.embed_dim)).unsqueeze(1) 
+        z_embeds = self.z_embed(surfZ) 
+        p_embeds = self.p_embed(surfPos)
+
+        tokens = z_embeds + p_embeds + time_embeds
+        output = self.net(
+            src=tokens.permute(1,0,2),
+            src_key_padding_mask=surf_mask,
+        ).transpose(0,1) 
+        
         pred = self.fc_out(output)
         return pred

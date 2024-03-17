@@ -137,8 +137,10 @@ def get_args_ldm():
                         help='Path to data folder')  
     parser.add_argument('--val_data', type=str, default='data_process/deepcad_data_split_6bit.pkl', 
                         help='Path to validation data folder')  
-    parser.add_argument("--option", type=str, choices=['surfpos', 'edgepos'], default='surfpos', 
-                        help="Choose between option [surfpos,edgepos] (default: surfpos)")
+    parser.add_argument('--surfvae', type=str, default='proj_log/deepcad_surfvae/epoch_400.pt', 
+                        help='Path to pretrained surface vae weights')  
+    parser.add_argument("--option", type=str, choices=['surfpos', 'surfz', 'edgepos'], default='surfpos', 
+                        help="Choose between option [surfpos,edgepos,surfz,edgez] (default: surfpos)")
     # Training parameters
     parser.add_argument('--batch_size', type=int, default=512, help='input batch size')  
     parser.add_argument('--train_nepoch', type=int, default=3000, help='number of epochs to train for')
@@ -147,7 +149,8 @@ def get_args_ldm():
     parser.add_argument('--max_face', type=int, default=50, help='maximum number of faces')
     parser.add_argument('--max_edge', type=int, default=30, help='maximum number of edges per face')
     parser.add_argument('--threshold', type=float, default=0.05, help='minimum threshold between two faces')
-    parser.add_argument('--scaled', type=float, default=3, help='wcs from -n ~ n')
+    parser.add_argument('--bbox_scaled', type=float, default=3, help='scaled the bbox')
+    parser.add_argument('--z_scaled', type=float, default=1, help='scaled the latent z')
     parser.add_argument("--gpu", type=int, nargs='+', default=[0, 1], help="GPU IDs to use for training (default: [0, 1])")
     parser.add_argument("--data_aug",  action='store_true', help='Use data augmentation')
     parser.add_argument("--sincos",  action='store_true', help='Use sincos positional encoding')
@@ -270,12 +273,12 @@ def bbox_corners(bboxes):
     return bboxes_all_corners
 
 
-def rotate_bbox(bboxes, angle_degrees, axis):
+def rotate_axis(pnts, angle_degrees, axis):
     """
     Rotate a point cloud around its center by a specified angle in degrees along a specified axis.
 
     Args:
-    - point_cloud: Numpy array of shape (N, 3) representing the point cloud.
+    - point_cloud: Numpy array of shape (N, ..., 3) representing the point cloud.
     - angle_degrees: Angle of rotation in degrees.
     - axis: Axis of rotation. Can be 'x', 'y', or 'z'.
 
@@ -286,8 +289,10 @@ def rotate_bbox(bboxes, angle_degrees, axis):
     # Convert angle to radians
     angle_radians = np.radians(angle_degrees)
     
-    # Convert bounding boxes to homogeneous coordinates
-    bboxes_homogeneous = np.concatenate((bboxes, np.ones((len(bboxes), 8, 1))), axis=2)
+    # Convert points to homogeneous coordinates
+    shape = list(np.shape(pnts))
+    shape[-1] = 1
+    pnts_homogeneous = np.concatenate((pnts, np.ones(shape)), axis=-1)
 
     # Compute rotation matrix based on the specified axis
     if axis == 'x':
@@ -314,17 +319,13 @@ def rotate_bbox(bboxes, angle_degrees, axis):
     else:
         raise ValueError("Invalid axis. Must be 'x', 'y', or 'z'.")
 
-    # Apply rotation to each bounding box
-    rotated_bboxes_homogeneous = np.dot(bboxes_homogeneous, rotation_matrix.T)
-
-    # Extract rotated bounding boxes
-    rotated_bboxes = rotated_bboxes_homogeneous[:, :, :3]
-
-    # Find the maximum absolute coordinate value
-    max_abs_coord = np.max(np.abs(rotated_bboxes))
+    # Apply rotation
+    rotated_pnts_homogeneous = np.dot(pnts_homogeneous, rotation_matrix.T)
+    rotated_pnts = rotated_pnts_homogeneous[...,:3]
 
     # Scale the point cloud to fit within the -1 to 1 cube
-    normalized_bbox = rotated_bboxes / max_abs_coord
+    max_abs_coord = np.max(np.abs(rotated_pnts))
+    normalized_bbox = rotated_pnts / max_abs_coord
 
     return normalized_bbox
 

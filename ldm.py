@@ -13,27 +13,28 @@ if not os.path.exists(args.save_dir):
     os.makedirs(args.save_dir)
 
 from dataset import SURFPosData, SURFZData
-from trainer import SurfPosTrainer#, SurfZTrainer
+from trainer import SurfPosTrainer, SurfZTrainer
 
 def run(args):
     if args.option == 'surfpos':
-        # Initialize dataset
+        # Initialize dataset and trainer
         train_dataset = SURFPosData(args.train_data, validate=False, aug=args.data_aug, args=args)
         val_dataset = SURFPosData(args.val_data, validate=True, aug=False, args=args)
-        # Initialize trainer
         ldm = SurfPosTrainer(args, train_dataset, val_dataset)
+
     elif args.option == 'surfz':
-        # Initialize dataset
+        # Initialize dataset and trainer
         train_dataset = SURFZData(args.train_data, validate=False, aug=args.data_aug, args=args)
         val_dataset = SURFZData(args.val_data, validate=True, aug=False, args=args)
-        # Initialize trainer
         ldm = SurfZTrainer(args, train_dataset, val_dataset)
+
     else:
         assert False, 'please choose between surfpos, surfz, edgepos, edgez'
 
     print('Start training...')
     # Main training loop
-    for _ in range(args.train_nepoch):  
+    for _ in range(args.train_nepoch): 
+
         # Train for one epoch
         ldm.train_one_epoch()
 

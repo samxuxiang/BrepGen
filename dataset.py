@@ -7,6 +7,9 @@ import random
 from multiprocessing.pool import Pool
 from utils import *
 import pdb 
+
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
         
 
 def filter_data(data):
@@ -149,7 +152,7 @@ class SURFPosData(torch.utils.data.Dataset):
     def __init__(self, input_data, validate=False, aug=False, args=None): 
         self.max_face = args.max_face
         self.max_edge = args.max_edge
-        self.scaled = args.scaled
+        self.bbox_scaled = args.bbox_scaled
         self.aug = aug
         self.data = []
 
@@ -162,7 +165,7 @@ class SURFPosData(torch.utils.data.Dataset):
 
         # Filter data in parallel
         params = zip(data_list, [args.max_face]*len(data_list), [args.max_edge]*len(data_list), 
-                     [args.scaled]*len(data_list), [args.threshold]*len(data_list))
+                     [args.bbox_scaled]*len(data_list), [args.threshold]*len(data_list))
         convert_iter = Pool(os.cpu_count()).imap(filter_data, params) 
         for data_path in tqdm(convert_iter, total=len(data_list)):
             if data_path is not None:
@@ -190,7 +193,7 @@ class SURFPosData(torch.utils.data.Dataset):
             # Random rotation
             for axis in ['x', 'y', 'z']:
                 angle = random.choice([90, 180, 270]) 
-                surfpos_corners = rotate_bbox(surfpos_corners, angle, axis)
+                surfpos_corners = rotate_axis(surfpos_corners, angle, axis)
             
             # Re-compute the bottom left and top right corners 
             surf_pos = get_bbox(surfpos_corners)
@@ -207,7 +210,7 @@ class SURFPosData(torch.utils.data.Dataset):
             surf_pos = surf_pos.reshape(len(surf_pos),6)
 
         # Make bbox range larger
-        surf_pos = surf_pos * self.scaled  
+        surf_pos = surf_pos * self.bbox_scaled  
 
         # Randomly shuffle the sequence
         random_indices = np.random.permutation(surf_pos.shape[0])
@@ -228,7 +231,7 @@ class SURFZData(torch.utils.data.Dataset):
     def __init__(self, input_data, validate=False, aug=False, args=None): 
         self.max_face = args.max_face
         self.max_edge = args.max_edge
-        self.scaled = args.scaled
+        self.bbox_scaled = args.bbox_scaled
         self.aug = aug
         self.data = []
 
@@ -241,7 +244,7 @@ class SURFZData(torch.utils.data.Dataset):
 
         # Filter data in parallel
         params = zip(data_list, [args.max_face]*len(data_list), [args.max_edge]*len(data_list), 
-                     [args.scaled]*len(data_list), [args.threshold]*len(data_list))
+                     [args.bbox_scaled]*len(data_list), [args.threshold]*len(data_list))
         convert_iter = Pool(os.cpu_count()).imap(filter_data, params) 
         for data_path in tqdm(convert_iter, total=len(data_list)):
             if data_path is not None:
@@ -250,6 +253,7 @@ class SURFZData(torch.utils.data.Dataset):
         print(f'Processed {len(self.data)}/{len(data_list)}')
         return      
 
+
     def __len__(self):
         return len(self.data)
 
@@ -257,7 +261,7 @@ class SURFZData(torch.utils.data.Dataset):
         # Load data
         with open(os.path.join('data_process', self.data[index]), "rb") as tf:
             data = pickle.load(tf)
-        _, _, _, _, _, _, _, _, surf_pos, _, _, _ = data.values()
+        _, _, surf_ncs, _, _, _, _, _, surf_pos, _, _, _ = data.values()
 
         # Data augmentation
         random_num = np.random.rand()
@@ -269,7 +273,8 @@ class SURFZData(torch.utils.data.Dataset):
             # Random rotation
             for axis in ['x', 'y', 'z']:
                 angle = random.choice([90, 180, 270]) 
-                surfpos_corners = rotate_bbox(surfpos_corners, angle, axis)
+                surf_ncs = rotate_axis(surf_ncs, angle, axis)
+                surfpos_corners = rotate_axis(surfpos_corners, angle, axis)
             
             # Re-compute the bottom left and top right corners 
             surf_pos = get_bbox(surfpos_corners)
@@ -286,17 +291,19 @@ class SURFZData(torch.utils.data.Dataset):
             surf_pos = surf_pos.reshape(len(surf_pos),6)
 
         # Make bbox range larger
-        surf_pos = surf_pos * self.scaled  
+        surf_pos = surf_pos * self.bbox_scaled  
 
         # Randomly shuffle the sequence
         random_indices = np.random.permutation(surf_pos.shape[0])
         surf_pos = surf_pos[random_indices]
+        surf_ncs = surf_ncs[random_indices]
     
-        # Padding
-        surf_pos = pad_repeat(surf_pos, self.max_face)
-        
-        # Randomly shuffle the sequence
-        random_indices = np.random.permutation(surf_pos.shape[0])
-        surf_pos = surf_pos[random_indices]
+        # Pad data
+        surf_pos, surf_mask = pad_zero(surf_pos, self.max_face, return_mask=True)
+        surf_ncs = pad_zero(surf_ncs, self.max_face)
 
-        return torch.FloatTensor(surf_pos)
+        return (
+            torch.FloatTensor(surf_pos),
+            torch.FloatTensor(surf_ncs),
+            torch.BoolTensor(surf_mask),
+        )
