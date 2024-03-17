@@ -12,4 +12,7 @@
   - [ ] Edge position
   - [ ] Edge latent z
 - [ ] Evaluation
+  - [ ] Generation
+  - [ ] Auto-Complete
+  - [ ] Point2CAD
 - [ ] Full Release
