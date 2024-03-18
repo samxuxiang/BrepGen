@@ -9,7 +9,7 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", type=str, help="Data folder path", required=True)
 parser.add_argument("--deepcad",  action='store_true', help='Process deepcad subset')
-parser.add_argument("--bit",  type=int, help='Deduplicate precision')
+parser.add_argument("--bit",  type=int, help='Deduplication precision')
 args = parser.parse_args()
 
 
@@ -21,7 +21,7 @@ else:
 # Load all ABC STEP folders
 train, val_path, test_path = load_abc_pkl(args.input, args.deepcad)
 
-# Remove duplicate for the training set 
+# Remove duplicates from the training set 
 train_path = []
 unique_hash = set()
 total = 0

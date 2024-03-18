@@ -14,8 +14,8 @@ import matplotlib.cm as cm
 
 def filter_data(data):
     """ 
-    Helper function to check is a brep need to be incuded 
-        in the training or not 
+    Helper function to check if a brep needs to be included
+        in the training data or not 
     """
     data_path, max_face, max_edge, scaled_value, threshold_value = data
     # Load data 
@@ -139,7 +139,7 @@ class EDGEData(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         edge_u = self.data[index]
-        # Data augmention, randomly rotate 50% of the times
+        # Data augmentation, randomly rotate 50% of the times
         if np.random.rand()>0.5 and self.aug:
             for axis in ['x', 'y', 'z']:
                 angle = random.choice([90, 180, 270])
@@ -235,14 +235,14 @@ class SURFZData(torch.utils.data.Dataset):
         self.aug = aug
         self.data = []
 
-        # Filter data list (only required once)
+        # Filter the data list (only required once)
         with open(input_data, "rb") as tf:
             if validate:
                 data_list = pickle.load(tf)['val']
             else:
                 data_list = pickle.load(tf)['train']
 
-        # Filter data in parallel
+        # Filter the data in parallel
         params = zip(data_list, [args.max_face]*len(data_list), [args.max_edge]*len(data_list), 
                      [args.bbox_scaled]*len(data_list), [args.threshold]*len(data_list))
         convert_iter = Pool(os.cpu_count()).imap(filter_data, params) 

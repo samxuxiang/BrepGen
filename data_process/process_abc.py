@@ -13,7 +13,7 @@ OUTPUT = 'converted' # default
 
 def get_bbox(point_cloud):
     """
-    Get the tighest fitting 3D bounding box giving a set of points (axis-aligned)
+    Get the tightest fitting 3D (axis-aligned) bounding box around a set of points 
     """
     # Find the minimum and maximum coordinates along each axis
     min_x = np.min(point_cloud[:, 0])

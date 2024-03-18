@@ -11,7 +11,7 @@ import pdb
 
 
 def real2bit(data, n_bits=8, min_range=-1, max_range=1):
-    """Convert vertices in [-1., 1.] to discrete values in [0, n_bits**2 - 1]."""
+    """Convert vertices in the [-1., 1.] range to discrete values in [0, n_bits**2 - 1]."""
     range_quantize = 2**n_bits - 1
     data_quantize = (data - min_range) * range_quantize / (max_range - min_range)
     data_quantize = np.clip(data_quantize, a_min=0, a_max=range_quantize) # clip values
@@ -178,14 +178,14 @@ def face_edge_adj(shape):
 
 def extract_primitive(solid):
     """
-    Extract all primitive information from splitted solid
+    Extract all primitive information from the given solid
 
     Args:
     - solid (occwl.Solid): A single b-rep solid in occwl format
 
     Returns:
     - face_pnts (N x 32 x 32 x 3): Sampled uv-grid points on the bounded surface region (face)
-    - edge_pnts (M x 32 x 3): Sampled u-grid points on the boundged curve region (edge)
+    - edge_pnts (M x 32 x 3): Sampled u-grid points on the bounded curve region (edge)
     - edge_corner_pnts (M x 2 x 3): Start & end vertices per edge
     - edgeFace_IncM (M x 2): Edge-Face incident matrix, every edge is connect to two face IDs
     - faceEdge_IncM: A list of N sublist, where each sublist represents the adjacent edge IDs to a face

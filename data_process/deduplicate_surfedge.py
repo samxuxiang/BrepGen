@@ -9,7 +9,7 @@ from utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", type=str, help="CAD .pkl file", required=True)
 parser.add_argument("--edge",  action='store_true', help='Process edge instead of surface')
-parser.add_argument("--bit",  type=int, help='Deduplicate precision')
+parser.add_argument("--bit",  type=int, help='Deduplication precision')
 args = parser.parse_args()
 
 
