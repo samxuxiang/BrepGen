@@ -1,0 +1,48 @@
+abc:
+  surfpos_weight: abc_ldm_surfpos.pt
+  surfz_weight:   abc_ldm_surfz.pt
+  edgepos_weight: abc_ldm_edgepos.pt
+  edgez_weight:   abc_ldm_edgez.pt
+  surfvae_weight: abc_vae_surf.pt
+  edgevae_weight: abc_vae_edge.pt
+  save_folder:    samples_abc
+  batch_size:     16
+  z_threshold:    0.2
+  bbox_threshold: 0.08
+  num_surfaces:   50
+  num_edges:      40
+  use_cf:         False
+  class_label:    []
+
+deepcad:
+  surfpos_weight: deepcad_ldm_surfpos.pt
+  surfz_weight:   deepcad_ldm_surfz.pt
+  edgepos_weight: deepcad_ldm_edgepos.pt
+  edgez_weight:   deepcad_ldm_edgez.pt
+  surfvae_weight: deepcad_vae_surf.pt
+  edgevae_weight: deepcad_vae_edge.pt
+  save_folder:    samples_deepcad
+  batch_size:     16
+  z_threshold:    0.2
+  bbox_threshold: 0.08
+  num_surfaces:   30
+  num_edges:      30
+  use_cf:         False
+  class_label:    []
+
+furniture:
+  surfpos_weight: furniture_ldm_surfpos.pt
+  surfz_weight:   furniture_ldm_surfz.pt
+  edgepos_weight: furniture_ldm_edgepos.pt
+  edgez_weight:   furniture_ldm_edgez.pt
+  surfvae_weight: furniture_vae_surf.pt
+  edgevae_weight: furniture_vae_edge.pt
+  save_folder:    samples_furniture
+  batch_size:     16
+  z_threshold:    0.2
+  bbox_threshold: 0.08
+  num_surfaces:   60
+  num_edges:      40
+  use_cf:         True
+  class_label:    chair # option: [bathtub/bed/bench/bookshelf/cabinet/chair/couch/lamp/sofa/table]
+          
