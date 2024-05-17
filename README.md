@@ -25,7 +25,7 @@
 ### Dependencies
 
 Install PyTorch and other dependencies:
-``````
+```
 conda create --name brepgen_env python=3.9 -y
 conda activate brepgen_env
 
