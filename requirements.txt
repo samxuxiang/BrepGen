@@ -2,6 +2,7 @@
 torch
 torchvision
 torchaudio
-
-chamferdist
+diffusers[torch]==0.27
+transformers
 wandb
+matplotlib
