@@ -25,16 +25,21 @@
 ### Dependencies
 
 Install PyTorch and other dependencies:
+``````
+conda create --name brepgen_env python=3.9 -y
+conda activate brepgen_env
 
-    pip install -r requirements.txt
+pip install -r requirements.txt
+pip install chamferdist
+```
 
-Install Diffusers: 
+If `chamferdist` fails to install here are a few options to try:
 
-    pip install diffusers["torch"] transformers
+- If there is a CUDA version mismatch error, then try setting the `CUDA_HOME` environment variable to point to CUDA installation folder. The CUDA version of this folder must match with PyTorch's version i.e. 11.8.
+
+- Try [building from source](https://github.com/krrish94/chamferdist?tab=readme-ov-file#building-from-source).
 
 Install OCCWL following the instruction [here](https://github.com/AutodeskAILab/occwl).
-
-Note:  try [building from source](https://github.com/krrish94/chamferdist?tab=readme-ov-file#building-from-source) if ```pip install chamferdist``` does not work.
 
 
 ## Data
