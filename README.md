@@ -40,7 +40,11 @@ If `chamferdist` fails to install here are a few options to try:
 - Try [building from source](https://github.com/krrish94/chamferdist?tab=readme-ov-file#building-from-source).
 
 Install OCCWL following the instruction [here](https://github.com/AutodeskAILab/occwl).
+If conda is stuck in "Solving environment..." there are two options to try:
 
+- Try using `mamba` as suggested in occwl's README.
+
+- Install pythonOCC: https://github.com/tpaviot/pythonocc-core?tab=readme-ov-file#install-with-conda and occwl manually: `pip install git+https://github.com/AutodeskAILab/occwl`.
 
 ## Data
 Download [ABC](https://archive.nyu.edu/handle/2451/43778) STEP files (100 folders), or the [Furniture Data](https://drive.google.com/file/d/16nXl7OXOZtPxRhkGobOezDTXiBisEVs2/view?usp=sharing). 
