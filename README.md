@@ -60,7 +60,7 @@ Remove repeated CAD models (under ```data_process``` folder, default is ```6 bit
 
     sh deduplicate.sh
 
-We also provide the post-processed data for [DeepCAD](https://drive.google.com/drive/folders/1N_60VCZKYgPviQgP8lwCOVXrzu9Midfe?usp=drive_link), [ABC](https://drive.google.com/drive/folders/1bA90Rz5EcwaUhUrgFbSIpgdJ0aeDjy3v?usp=drive_link), and [Furniture](https://drive.google.com/drive/folders/13TxFFSXqT4IgyIwO4z6gbm4jg3JrnbZL?usp=drive_link).
+We also provide the deduplicated files for [DeepCAD](https://drive.google.com/drive/folders/1N_60VCZKYgPviQgP8lwCOVXrzu9Midfe?usp=drive_link), [ABC](https://drive.google.com/drive/folders/1bA90Rz5EcwaUhUrgFbSIpgdJ0aeDjy3v?usp=drive_link), and [Furniture](https://drive.google.com/drive/folders/13TxFFSXqT4IgyIwO4z6gbm4jg3JrnbZL?usp=drive_link).
 
 
 
