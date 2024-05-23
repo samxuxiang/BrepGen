@@ -181,6 +181,9 @@ def process(step_folder):
         else:
             data_uid = step_path.split('/')[-2]
             sub_folder = data_uid[:4]
+            
+        if data_uid.endswith('.step'):
+            data_uid = data_uid[:-5] # furniture avoid .step
 
         data['uid'] = data_uid
         save_folder = os.path.join(OUTPUT, sub_folder)
