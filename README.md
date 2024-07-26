@@ -47,7 +47,7 @@ If conda is stuck in "Solving environment..." there are two options to try:
 - Install pythonOCC: https://github.com/tpaviot/pythonocc-core?tab=readme-ov-file#install-with-conda and occwl manually: `pip install git+https://github.com/AutodeskAILab/occwl`.
 
 ## Data
-Download [ABC](https://archive.nyu.edu/handle/2451/43778) STEP files (100 folders), or the [Furniture Data](https://drive.google.com/file/d/16nXl7OXOZtPxRhkGobOezDTXiBisEVs2/view?usp=sharing). 
+Download [ABC](https://archive.nyu.edu/handle/2451/43778) STEP files (100 folders). 
 
 The faces, edges, and vertices need to be extracted from the STEP files.  
 
@@ -100,7 +100,6 @@ We also provide the individual checkpoints trained on different datasets.
 |--------------------|-----------| -----------|
 | DeepCAD | [vae model](https://drive.google.com/drive/folders/1UZYqJ2EmTjzeTcNr_NL3bPpU4WrufvQa?usp=drive_link) |   [latent diffusion model](https://drive.google.com/drive/folders/1jonuCzoTBFOKKlnaoGlbmhT6YlnH0lma?usp=drive_link) |
 | ABC | [vae model](https://drive.google.com/drive/folders/18Ib9L0kpFf4ylZIRTCYFhXZB_GVIUm53?usp=drive_link) |   [latent diffusion model](https://drive.google.com/drive/folders/1hv7ZUcU-L3J0LiONK60-TEh7sAN0zfve?usp=drive_link) |
-| Furniture | [vae model](https://drive.google.com/drive/folders/1HT5h8b6mxcgBfz0Ciwue8nANcKgmRTd-?usp=drive_link) |   [latent diffusion model](https://drive.google.com/drive/folders/1NxuZ9en6yWSkmb2pBQ97aFlWvtBSNnjU?usp=drive_link) |
 
 
 ## Acknowledgement
